@@ -143,13 +143,13 @@ forge test --gas-report
 
 ### Test Coverage
 
-- ✅ 16 passing tests
-- ✅ Dynamic fee calculations
-- ✅ Pool pause/resume mechanisms
-- ✅ Community LP tracking
-- ✅ Governance functions
-- ✅ Access control
-- ✅ Edge cases and reverts
+- [ ] 16 passing tests
+- [ ] Dynamic fee calculations
+- [ ] Pool pause/resume mechanisms
+- [ ] Community LP tracking
+- [ ] Governance functions
+- [ ] Access control
+- [ ] Edge cases and reverts
 
 ## 🔧 Deployment
 
@@ -226,10 +226,10 @@ forge script script/Deploy.s.sol:DeployCorridorHook \
 
 ### Phase 1: MVP (Current)
 
-- ✅ Core hook implementation
-- ✅ Reactive Network integration
-- ✅ Comprehensive testing
-- ✅ Documentation
+- [ ] Core hook implementation
+- [ ] Reactive Network integration
+- [ ] Comprehensive testing
+- [ ] Documentation
 
 ### Phase 2: Expansion
 
@@ -269,7 +269,7 @@ MIT License - see [LICENSE](LICENSE) for details
 
 ## 👥 Team
 
-Built with ❤️ for the African diaspora and local communities
+Built for the African diaspora and local communities
 
 ---
 
