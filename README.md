@@ -112,7 +112,7 @@ if (volatility > threshold) {
 ```solidity
 // Subscribe to price oracle events
 subscribe(
-    chainId: 8453,  // Base
+    chainId: 84532,  // Base Sepolia
     contract: priceOracle,
     event: "PriceUpdated(bytes32,uint256)"
 )
@@ -143,13 +143,16 @@ forge test --gas-report
 
 ### Test Coverage
 
-- ✅ 16 passing tests
+- ✅ 73 passing tests (41 Hook + 32 Reactive)
+- ✅ 100% line coverage on production contracts
 - ✅ Dynamic fee calculations
 - ✅ Pool pause/resume mechanisms
 - ✅ Community LP tracking
 - ✅ Governance functions
 - ✅ Access control
 - ✅ Edge cases and reverts
+- ✅ Volatility calculations
+- ✅ View function validation
 
 ## 🔧 Deployment
 
