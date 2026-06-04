@@ -5,8 +5,10 @@
 **Project Name**: Corridor  
 **Tagline**: Community-Owned Remittance Infrastructure  
 **Category**: Uniswap v4 Hooks + Reactive Network Integration  
-**Target Chain**: Base  
+**Target Chain**: Base Sepolia (Testnet) / Base (Production)  
 **Team**: Solo Developer
+
+**Why Base?** Base Sepolia is officially supported by Reactive Network, enabling full cross-chain automation for IL protection. This allows the project to demonstrate both Uniswap v4 hooks AND Reactive Network integration working together in production.
 
 ---
 
@@ -44,8 +46,8 @@ Corridor reduces African remittance costs from 8.37% to <1% by enabling communit
 **Code Reference**:
 
 ```solidity
-// CorridorReactive.sol - Lines 130-165
-function _checkVolatility(bytes32 poolId, uint256 newPrice) internal {
+// CorridorReactive.sol
+function _checkVolatility(PoolId poolId, uint256 newPrice) internal {
     uint256 priceChange = calculateChange(newPrice, lastPrices[poolId]);
 
     if (priceChange > volatilityThreshold && !poolPaused[poolId]) {
@@ -71,7 +73,7 @@ function _checkVolatility(bytes32 poolId, uint256 newPrice) internal {
 **Code Reference**:
 
 ```solidity
-// CorridorHook.sol - Lines 235-250
+// CorridorHook.sol
 function updatePoolFee(PoolId poolId, uint256 volatilityBps) external {
     uint24 newFee;
     if (volatilityBps > volatilityThreshold) {
@@ -124,7 +126,7 @@ Price Oracle (Base) → Reactive Network → CorridorHook (Base)
 3. **Conditional Callbacks**: Triggers only when thresholds exceeded
 4. **Cross-Chain Execution**: Sends transactions to Base
 
-**Code Reference**: `src/CorridorReactive.sol` (Lines 70-110)
+**Code Reference**: See `src/CorridorReactive.sol` for complete implementation
 
 ---
 
@@ -202,13 +204,13 @@ Suite result: ok. 16 passed; 0 failed; 0 skipped
 
 ### Cost Savings
 
-| Method           | Fee      | Family Receives (£200) | Annual Savings\* |
+| Method           | Fee      | Family Receives ($200) | Annual Savings\* |
 | ---------------- | -------- | ---------------------- | ---------------- |
-| Western Union    | 8.37%    | £183.26                | -                |
-| Traditional Bank | 6.5%     | £187.00                | -                |
-| **Corridor**     | **0.3%** | **£199.40**            | **£193.68**      |
+| Western Union    | 8.37%    | $183.26                | -                |
+| Traditional Bank | 6.5%     | $187.00                | -                |
+| **Corridor**     | **0.3%** | **$199.40**            | **$193.68**      |
 
-\*Based on monthly £200 remittance
+\*Based on monthly $200 remittance
 
 ### Market Opportunity
 
@@ -263,9 +265,8 @@ Suite result: ok. 16 passed; 0 failed; 0 skipped
 
 ### Documentation
 
-- ✅ Comprehensive README
-- ✅ Detailed ARCHITECTURE.md
-- ✅ Interactive DEMO.md
+- ✅ Comprehensive README with architecture details
+- ✅ Complete HOOKATHON_SUBMISSION documentation
 - ✅ Inline code comments
 - ✅ NatSpec documentation
 
@@ -289,25 +290,25 @@ Suite result: ok. 16 passed; 0 failed; 0 skipped
 
 ## Deployment & Demo
 
-### Testnet Deployment
+### Network Selection: Base Sepolia
 
-```bash
-# Deploy to Base Sepolia
-forge script script/Deploy.s.sol:DeployCorridorHook \
-    --rpc-url $BASE_SEPOLIA_RPC \
-    --broadcast \
-    --verify
-```
+**Why Base over Unichain for this hookathon?**
 
-### Live Demo
+While Unichain is Uniswap's dedicated L2, Base Sepolia was chosen for strategic technical reasons:
 
-See `DEMO.md` for detailed walkthrough of:
+1. **Reactive Network Support**: Base is officially supported by Reactive Network (confirmed by dedicated testnet faucet), while Unichain support is not yet available. The IL protection mechanism requires Reactive's cross-chain automation.
 
-1. Normal remittance flow
-2. High volatility protection
-3. Dynamic fee adjustment
-4. Community LP journey
-5. Emergency governance action
+2. **Full Integration**: Deploying to Base allows demonstration of BOTH sponsor technologies working together:
+   - ✅ Uniswap v4 hooks (dynamic fees, IL protection)
+   - ✅ Reactive Network automation (volatility monitoring, automated callbacks)
+
+3. **Production-Ready**: Base Sepolia has proven infrastructure, clear documentation, and active testnet faucets. This ensures a working demonstration.
+
+4. **Judge Appeal**: A fully functional hook with meaningful Reactive integration demonstrates technical excellence better than a hook on Unichain without automation.
+
+5. **Multi-Chain Vision**: Base is part of the Superchain ecosystem and widely used for DeFi. Success on Base demonstrates real-world viability.
+
+**Note**: When Reactive Network adds Unichain support, Corridor can be deployed there without code changes - it's purely configuration.
 
 ---
 
@@ -403,28 +404,26 @@ corridor/
 ├── script/
 │   └── Deploy.s.sol              # Deployment scripts
 ├── README.md                      # Project overview
-├── ARCHITECTURE.md                # Technical details
-├── DEMO.md                        # Usage scenarios
-└── HOOKATHON_SUBMISSION.md       # This file
+└── HOOKATHON_SUBMISSION.md       # This submission document
 ```
 
 ---
 
 ## Links & Resources
 
-- **GitHub**: [Repository URL]
-- **Demo Video**: [Video URL]
-- **Deployed Contracts**: [Testnet addresses]
-- **Documentation**: See README.md, ARCHITECTURE.md, DEMO.md
+- **GitHub**: https://github.com/meshackyaro/corridor
+- **Demo Video**: [To be added]
+- **Deployed Contracts**: [To be added after testnet deployment]
+- **Documentation**: See README.md and HOOKATHON_SUBMISSION.md
 
 ---
 
 ## Contact
 
-**Builder**: [Your Name]  
-**Email**: [Your Email]  
-**Twitter**: [Your Twitter]  
-**Discord**: [Your Discord]
+For questions or collaboration:
+
+- **GitHub**: [@meshackyaro](https://github.com/meshackyaro)
+- **Project Repository**: https://github.com/meshackyaro/corridor
 
 ---
 
@@ -438,4 +437,4 @@ This isn't just another DeFi primitive—it's a solution to a $54B problem that 
 
 ---
 
-_Thank you for considering our submission. We're excited about the potential to bring this to production and serve African communities worldwide._
+_Thank you for considering this submission. The goal is to bring this to production and serve African communities worldwide._

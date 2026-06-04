@@ -11,12 +11,14 @@ import {IPoolManager} from "v4-core/interfaces/IPoolManager.sol";
 /// @title Deploy Corridor Hook
 /// @notice Deployment script for Corridor remittance infrastructure
 contract DeployCorridorHook is Script {
-    // Base Sepolia addresses (update for mainnet)
+    // Base Sepolia addresses
     address constant POOL_MANAGER = 0x8C4BcBE6b9eF47855f97E675296FA3F6fafa5F1A; // v4 PoolManager on Base Sepolia
 
-    // Reactive Network addresses
-    address constant REACTIVE_SYSTEM_CONTRACT = address(0); // TODO: Update with actual address
-    address constant REACTIVE_CALLBACK_PROXY = address(0); // TODO: Update with actual address
+    // Reactive Network Lasna Testnet addresses
+    // Note: These need to be obtained from Reactive Network documentation
+    // The contracts will be deployed on Reactive Lasna and interact with Base Sepolia
+    address constant REACTIVE_SYSTEM_CONTRACT = address(0); // TODO: Get from Reactive docs
+    address constant REACTIVE_CALLBACK_PROXY = address(0); // TODO: Get from Reactive docs
 
     // Default parameters
     uint256 constant VOLATILITY_THRESHOLD = 500; // 5%

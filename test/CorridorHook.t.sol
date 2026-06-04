@@ -8,6 +8,7 @@ import {PoolKey} from "v4-core/types/PoolKey.sol";
 import {PoolId, PoolIdLibrary} from "v4-core/types/PoolId.sol";
 import {Currency} from "v4-core/types/Currency.sol";
 import {IHooks} from "v4-core/interfaces/IHooks.sol";
+import {BalanceDelta} from "v4-core/types/BalanceDelta.sol";
 
 contract CorridorHookTest is Test {
     using PoolIdLibrary for PoolKey;
@@ -30,6 +31,12 @@ contract CorridorHookTest is Test {
     event DynamicFeeUpdated(PoolId indexed poolId, uint24 newFee);
     event CommunityLPAdded(address indexed lp, uint256 amount);
     event CommunityLPRemoved(address indexed lp, uint256 amount);
+    event FeeParametersUpdated(uint24 newBaseFee, uint24 newMaxFee);
+    event ReactiveContractUpdated(address indexed newReactive);
+    event GovernanceTransferred(
+        address indexed oldGovernance,
+        address indexed newGovernance
+    );
 
     function setUp() public {
         // Setup addresses
@@ -269,6 +276,287 @@ contract CorridorHookTest is Test {
         vm.prank(makeAddr("attacker"));
         vm.expectRevert(CorridorHook.Unauthorized.selector);
         hook.transferGovernance(newGovernance);
+    }
+
+    // ============ Additional Coverage Tests ============
+
+    function test_Constructor_RevertZeroPoolManager() public {
+        vm.expectRevert(CorridorHook.InvalidAddress.selector);
+        new CorridorHook(
+            IPoolManager(address(0)),
+            governance,
+            VOLATILITY_THRESHOLD
+        );
+    }
+
+    function test_Constructor_RevertZeroGovernance() public {
+        vm.expectRevert(CorridorHook.InvalidAddress.selector);
+        new CorridorHook(poolManager, address(0), VOLATILITY_THRESHOLD);
+    }
+
+    function test_Constructor_RevertInvalidThreshold() public {
+        vm.expectRevert(CorridorHook.InvalidVolatilityThreshold.selector);
+        new CorridorHook(poolManager, governance, 0);
+
+        vm.expectRevert(CorridorHook.InvalidVolatilityThreshold.selector);
+        new CorridorHook(poolManager, governance, 10001);
+    }
+
+    function test_AfterInitialize() public {
+        PoolKey memory key = _createPoolKey();
+
+        vm.prank(address(poolManager));
+        bytes4 selector = hook.afterInitialize(address(this), key, 0, 0);
+
+        assertEq(selector, IHooks.afterInitialize.selector);
+    }
+
+    function test_AfterSwap() public {
+        PoolKey memory key = _createPoolKey();
+        IPoolManager.SwapParams memory params;
+
+        vm.prank(address(poolManager));
+        (bytes4 selector, int128 delta) = hook.afterSwap(
+            address(this),
+            key,
+            params,
+            BalanceDelta.wrap(0),
+            ""
+        );
+
+        assertEq(selector, IHooks.afterSwap.selector);
+        assertEq(delta, 0);
+    }
+
+    function test_AfterAddLiquidity() public {
+        PoolKey memory key = _createPoolKey();
+        IPoolManager.ModifyLiquidityParams memory params;
+
+        vm.prank(address(poolManager));
+        (bytes4 selector, BalanceDelta delta) = hook.afterAddLiquidity(
+            address(this),
+            key,
+            params,
+            BalanceDelta.wrap(0),
+            BalanceDelta.wrap(0),
+            ""
+        );
+
+        assertEq(selector, IHooks.afterAddLiquidity.selector);
+        assertEq(BalanceDelta.unwrap(delta), 0);
+    }
+
+    function test_AfterRemoveLiquidity() public {
+        PoolKey memory key = _createPoolKey();
+        IPoolManager.ModifyLiquidityParams memory params;
+
+        vm.prank(address(poolManager));
+        (bytes4 selector, BalanceDelta delta) = hook.afterRemoveLiquidity(
+            address(this),
+            key,
+            params,
+            BalanceDelta.wrap(0),
+            BalanceDelta.wrap(0),
+            ""
+        );
+
+        assertEq(selector, IHooks.afterRemoveLiquidity.selector);
+        assertEq(BalanceDelta.unwrap(delta), 0);
+    }
+
+    function test_BeforeDonate() public {
+        PoolKey memory key = _createPoolKey();
+
+        vm.prank(address(poolManager));
+        bytes4 selector = hook.beforeDonate(address(this), key, 100, 100, "");
+
+        assertEq(selector, IHooks.beforeDonate.selector);
+    }
+
+    function test_AfterDonate() public {
+        PoolKey memory key = _createPoolKey();
+
+        vm.prank(address(poolManager));
+        bytes4 selector = hook.afterDonate(address(this), key, 100, 100, "");
+
+        assertEq(selector, IHooks.afterDonate.selector);
+    }
+
+    function test_UpdatePoolFee_ByGovernance() public {
+        PoolKey memory key = _createPoolKey();
+        PoolId poolId = key.toId();
+
+        // Initialize pool
+        vm.prank(address(poolManager));
+        hook.beforeInitialize(address(this), key, 0);
+
+        // Update fee by governance (without reactive contract)
+        uint256 volatility = 250;
+
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true);
+        emit DynamicFeeUpdated(poolId, 65);
+        hook.updatePoolFee(poolId, volatility);
+
+        assertEq(hook.poolDynamicFee(poolId), 65);
+    }
+
+    function test_UpdatePoolFee_RevertUnauthorized() public {
+        PoolKey memory key = _createPoolKey();
+        PoolId poolId = key.toId();
+
+        vm.prank(makeAddr("attacker"));
+        vm.expectRevert(CorridorHook.Unauthorized.selector);
+        hook.updatePoolFee(poolId, 100);
+    }
+
+    function test_PausePool_ByGovernance() public {
+        PoolKey memory key = _createPoolKey();
+        PoolId poolId = key.toId();
+
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true);
+        emit PoolPausedByVolatility(poolId, 500);
+        hook.pausePool(poolId, 500);
+
+        assertTrue(hook.poolPaused(poolId));
+    }
+
+    function test_PausePool_RevertUnauthorized() public {
+        PoolKey memory key = _createPoolKey();
+        PoolId poolId = key.toId();
+
+        vm.prank(makeAddr("attacker"));
+        vm.expectRevert(CorridorHook.Unauthorized.selector);
+        hook.pausePool(poolId, 100);
+    }
+
+    function test_ResumePool_ByGovernance() public {
+        PoolKey memory key = _createPoolKey();
+        PoolId poolId = key.toId();
+
+        // Pause first
+        vm.prank(governance);
+        hook.pausePool(poolId, 500);
+
+        // Resume by governance
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true);
+        emit PoolResumed(poolId);
+        hook.resumePool(poolId);
+
+        assertFalse(hook.poolPaused(poolId));
+    }
+
+    function test_ResumePool_RevertUnauthorized() public {
+        PoolKey memory key = _createPoolKey();
+        PoolId poolId = key.toId();
+
+        vm.prank(makeAddr("attacker"));
+        vm.expectRevert(CorridorHook.Unauthorized.selector);
+        hook.resumePool(poolId);
+    }
+
+    function test_BeforeRemoveLiquidity_WithoutShares() public {
+        PoolKey memory key = _createPoolKey();
+        IPoolManager.ModifyLiquidityParams memory params;
+        address newLP = makeAddr("newLP");
+
+        // Remove without having added (should not revert, just skip)
+        vm.prank(address(poolManager));
+        bytes4 selector = hook.beforeRemoveLiquidity(newLP, key, params, "");
+
+        assertEq(selector, IHooks.beforeRemoveLiquidity.selector);
+        assertEq(hook.communityLPShares(newLP), 0);
+    }
+
+    function test_UpdatePoolFee_AtExactThreshold() public {
+        vm.prank(governance);
+        hook.setReactiveContract(reactiveContract);
+
+        PoolKey memory key = _createPoolKey();
+        PoolId poolId = key.toId();
+
+        vm.prank(address(poolManager));
+        hook.beforeInitialize(address(this), key, 0);
+
+        // Volatility exactly at threshold (500 = 5%)
+        uint256 volatility = 500;
+
+        vm.prank(reactiveContract);
+        hook.updatePoolFee(poolId, volatility);
+
+        // Should still use baseFee + calculation, not maxFee
+        // Expected: baseFee (30) + (500 * (100-30) / 500) = 30 + 70 = 100
+        assertEq(hook.poolDynamicFee(poolId), 100);
+    }
+
+    function test_SetFeeParameters_EmitsEvent() public {
+        uint24 newBaseFee = 50;
+        uint24 newMaxFee = 150;
+
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true);
+        emit FeeParametersUpdated(newBaseFee, newMaxFee);
+        hook.setFeeParameters(newBaseFee, newMaxFee);
+    }
+
+    function test_SetReactiveContract_EmitsEvent() public {
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true);
+        emit ReactiveContractUpdated(reactiveContract);
+        hook.setReactiveContract(reactiveContract);
+    }
+
+    function test_TransferGovernance_EmitsEvent() public {
+        address newGovernance = makeAddr("newGovernance");
+
+        vm.prank(governance);
+        vm.expectEmit(true, true, true, true);
+        emit GovernanceTransferred(governance, newGovernance);
+        hook.transferGovernance(newGovernance);
+    }
+
+    function test_BeforeInitialize_SetsBaseFee() public {
+        PoolKey memory key = _createPoolKey();
+        PoolId poolId = key.toId();
+
+        vm.prank(address(poolManager));
+        bytes4 selector = hook.beforeInitialize(address(this), key, 0);
+
+        assertEq(selector, IHooks.beforeInitialize.selector);
+        assertEq(hook.poolDynamicFee(poolId), 30); // baseFee
+    }
+
+    function test_NotPoolManager_BeforeInitialize() public {
+        PoolKey memory key = _createPoolKey();
+
+        vm.expectRevert(CorridorHook.NotPoolManager.selector);
+        hook.beforeInitialize(address(this), key, 0);
+    }
+
+    function test_NotPoolManager_BeforeSwap() public {
+        PoolKey memory key = _createPoolKey();
+        IPoolManager.SwapParams memory params;
+
+        vm.expectRevert(CorridorHook.NotPoolManager.selector);
+        hook.beforeSwap(address(this), key, params, "");
+    }
+
+    function test_NotPoolManager_BeforeAddLiquidity() public {
+        PoolKey memory key = _createPoolKey();
+        IPoolManager.ModifyLiquidityParams memory params;
+
+        vm.expectRevert(CorridorHook.NotPoolManager.selector);
+        hook.beforeAddLiquidity(address(this), key, params, "");
+    }
+
+    function test_NotPoolManager_BeforeRemoveLiquidity() public {
+        PoolKey memory key = _createPoolKey();
+        IPoolManager.ModifyLiquidityParams memory params;
+
+        vm.expectRevert(CorridorHook.NotPoolManager.selector);
+        hook.beforeRemoveLiquidity(address(this), key, params, "");
     }
 
     // Helper functions

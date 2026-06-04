@@ -153,6 +153,14 @@ forge test --gas-report
 
 ## 🔧 Deployment
 
+### Target Network
+
+**Base Sepolia Testnet** (Chain ID: 84532)
+
+- **Why Base?** Officially supported by Reactive Network for cross-chain automation
+- **Uniswap v4**: PoolManager at `0x8C4BcBE6b9eF47855f97E675296FA3F6fafa5F1A`
+- **Reactive Network**: Lasna Testnet integration for automated IL protection
+
 ### Prerequisites
 
 ```bash
@@ -164,12 +172,17 @@ foundryup
 forge install
 ```
 
+### Get Testnet Funds
+
+1. **Base Sepolia ETH**: Use [Base Sepolia Faucet](https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet)
+2. **Reactive lREACT**: Send ETH to `0x2afaFD298b23b62760711756088F75B7409f5967` on Base Sepolia (1 ETH → 100 lREACT)
+
 ### Deploy to Base Sepolia
 
 ```bash
 # Set environment variables
 export PRIVATE_KEY=<your-private-key>
-export BASE_SEPOLIA_RPC=<rpc-url>
+export BASE_SEPOLIA_RPC=https://sepolia.base.org
 export GOVERNANCE_ADDRESS=<governance-address>
 
 # Deploy
@@ -177,8 +190,13 @@ forge script script/Deploy.s.sol:DeployCorridorHook \
     --rpc-url $BASE_SEPOLIA_RPC \
     --private-key $PRIVATE_KEY \
     --broadcast \
-    --verify
+    --verify \
+    --etherscan-api-key $BASESCAN_API_KEY
 ```
+
+### Verify Deployment
+
+Check your contracts on [Base Sepolia Explorer](https://sepolia.basescan.org/)
 
 ## 📈 Impact Metrics
 

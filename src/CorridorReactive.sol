@@ -3,16 +3,20 @@ pragma solidity ^0.8.24;
 
 import {IReactive} from "./interfaces/IReactive.sol";
 import {ICorridorHook} from "./interfaces/ICorridorHook.sol";
+import {PoolId, PoolIdLibrary} from "v4-core/types/PoolId.sol";
 
 /// @title CorridorReactive
 /// @notice Reactive Network contract for automated volatility monitoring and IL protection
 /// @dev Monitors price oracle events and triggers hook callbacks for IL protection
 contract CorridorReactive is IReactive {
+    using PoolIdLibrary for PoolId;
     // ============ Errors ============
     error Unauthorized();
     error InvalidThreshold();
     error CallbackFailed();
     error InvalidAddress();
+    error PriceIsZero();
+    error NoResubscriptionNeeded();
 
     // ============ Events ============
     event VolatilityDetected(
@@ -33,6 +37,7 @@ contract CorridorReactive is IReactive {
         address indexed oldOwner,
         address indexed newOwner
     );
+    event FeeUpdateTriggered(address indexed pool, uint256 volatility);
 
     // ============ State Variables ============
 
@@ -52,16 +57,16 @@ contract CorridorReactive is IReactive {
     uint256 public volatilityThreshold;
 
     /// @notice Last recorded prices per pool
-    mapping(bytes32 => uint256) public lastPrices;
+    mapping(PoolId => uint256) public lastPrices;
 
     /// @notice Pause status per pool
-    mapping(bytes32 => bool) public poolPaused;
+    mapping(PoolId => bool) public poolPaused;
 
     /// @notice Owner address for configuration
     address public owner;
 
-    /// @notice Destination chain ID (Base = 8453)
-    uint256 public constant DESTINATION_CHAIN_ID = 8453;
+    /// @notice Destination chain ID (Base Sepolia = 84532, Base Mainnet = 8453)
+    uint256 public constant DESTINATION_CHAIN_ID = 84532;
 
     // ============ Constructor ============
 
@@ -119,10 +124,7 @@ contract CorridorReactive is IReactive {
     ) external onlySystem {
         // Decode price update data
         // Expected format: (poolId, newPrice)
-        (bytes32 poolId, uint256 newPrice) = abi.decode(
-            data,
-            (bytes32, uint256)
-        );
+        (PoolId poolId, uint256 newPrice) = abi.decode(data, (PoolId, uint256));
 
         // Check for volatility
         _checkVolatility(poolId, newPrice);
@@ -145,13 +147,18 @@ contract CorridorReactive is IReactive {
     }
 
     /// @notice Checks price volatility and triggers callbacks
-    function _checkVolatility(bytes32 poolId, uint256 newPrice) internal {
+    function _checkVolatility(PoolId poolId, uint256 newPrice) internal {
+        if (newPrice == 0) revert PriceIsZero();
+
         uint256 lastPrice = lastPrices[poolId];
 
         // First price update
         if (lastPrice == 0) {
             lastPrices[poolId] = newPrice;
-            emit PriceUpdated(address(uint160(uint256(poolId))), newPrice);
+            emit PriceUpdated(
+                address(uint160(uint256(PoolId.unwrap(poolId)))),
+                newPrice
+            );
             return;
         }
 
@@ -164,7 +171,7 @@ contract CorridorReactive is IReactive {
         }
 
         emit VolatilityDetected(
-            address(uint160(uint256(poolId))),
+            address(uint160(uint256(PoolId.unwrap(poolId)))),
             priceChange,
             block.timestamp
         );
@@ -179,43 +186,77 @@ contract CorridorReactive is IReactive {
         ) {
             _resumePool(poolId);
         }
+        // Update fee based on current volatility (even if not pausing)
+        else if (!poolPaused[poolId]) {
+            _updateFee(poolId, priceChange);
+        }
 
         // Update last price
         lastPrices[poolId] = newPrice;
-        emit PriceUpdated(address(uint160(uint256(poolId))), newPrice);
+        emit PriceUpdated(
+            address(uint160(uint256(PoolId.unwrap(poolId)))),
+            newPrice
+        );
     }
 
     /// @notice Triggers callback to pause pool on destination chain
-    function _pausePool(bytes32 poolId, uint256 priceChange) internal {
+    function _pausePool(PoolId poolId, uint256 priceChange) internal {
         poolPaused[poolId] = true;
 
         // Prepare callback data
         bytes memory payload = abi.encodeWithSignature(
             "pausePool(bytes32,uint256)",
-            poolId,
+            PoolId.unwrap(poolId),
             priceChange
         );
 
         // Send callback to destination chain
         _sendCallback(payload);
 
-        emit PoolPauseTriggered(address(uint160(uint256(poolId))), priceChange);
+        emit PoolPauseTriggered(
+            address(uint160(uint256(PoolId.unwrap(poolId)))),
+            priceChange
+        );
     }
 
     /// @notice Triggers callback to resume pool on destination chain
-    function _resumePool(bytes32 poolId) internal {
+    function _resumePool(PoolId poolId) internal {
         poolPaused[poolId] = false;
 
         // Prepare callback data
         bytes memory payload = abi.encodeWithSignature(
             "resumePool(bytes32)",
-            poolId
+            PoolId.unwrap(poolId)
         );
 
         // Send callback to destination chain
         _sendCallback(payload);
 
-        emit PoolResumeTriggered(address(uint160(uint256(poolId))));
+        emit PoolResumeTriggered(
+            address(uint160(uint256(PoolId.unwrap(poolId))))
+        );
+    }
+
+    /// @notice Triggers callback to update pool fee based on volatility
+    /// @dev Only triggers if volatility is significant but below pause threshold
+    function _updateFee(PoolId poolId, uint256 priceChange) internal {
+        // Only update if there's meaningful volatility (>1%)
+        if (priceChange < 100) return;
+
+        // Prepare callback data
+        bytes memory payload = abi.encodeWithSignature(
+            "updatePoolFee(bytes32,uint256)",
+            PoolId.unwrap(poolId),
+            priceChange
+        );
+
+        // Send callback to destination chain
+        _sendCallback(payload);
+
+        emit FeeUpdateTriggered(
+            address(uint160(uint256(PoolId.unwrap(poolId)))),
+            priceChange
+        );
     }
 
     /// @notice Sends callback to destination chain via Reactive Network
@@ -257,6 +298,7 @@ contract CorridorReactive is IReactive {
     /// @param _newOracle New oracle contract address
     function setPriceOracle(address _newOracle) external onlyOwner {
         if (_newOracle == address(0)) revert InvalidAddress();
+        if (_newOracle == priceOracle) revert NoResubscriptionNeeded();
         priceOracle = _newOracle;
         _subscribe();
         emit PriceOracleUpdated(_newOracle);
@@ -272,11 +314,47 @@ contract CorridorReactive is IReactive {
     }
 
     /// @notice Manual trigger for testing
+    /// @param poolId Pool identifier
+    /// @param newPrice New price to check
     function manualCheckVolatility(
-        bytes32 poolId,
+        PoolId poolId,
         uint256 newPrice
     ) external onlyOwner {
         _checkVolatility(poolId, newPrice);
+    }
+
+    /// @notice View function to calculate expected volatility
+    /// @param poolId Pool identifier
+    /// @param newPrice Hypothetical new price
+    /// @return priceChange The calculated volatility in basis points
+    function calculateVolatility(
+        PoolId poolId,
+        uint256 newPrice
+    ) external view returns (uint256 priceChange) {
+        uint256 lastPrice = lastPrices[poolId];
+        if (lastPrice == 0 || newPrice == 0) return 0;
+
+        if (newPrice > lastPrice) {
+            priceChange = ((newPrice - lastPrice) * 10000) / lastPrice;
+        } else {
+            priceChange = ((lastPrice - newPrice) * 10000) / lastPrice;
+        }
+    }
+
+    /// @notice Check if a pool would be paused at a given price
+    /// @param poolId Pool identifier
+    /// @param newPrice Hypothetical new price
+    /// @return wouldPause True if pool would be paused
+    /// @return wouldResume True if pool would be resumed
+    function checkPauseStatus(
+        PoolId poolId,
+        uint256 newPrice
+    ) external view returns (bool wouldPause, bool wouldResume) {
+        uint256 priceChange = this.calculateVolatility(poolId, newPrice);
+        bool isPaused = poolPaused[poolId];
+
+        wouldPause = priceChange > volatilityThreshold && !isPaused;
+        wouldResume = priceChange <= (volatilityThreshold / 2) && isPaused;
     }
 }
 
