@@ -17,8 +17,8 @@ contract DeployCorridorHook is Script {
     // Reactive Network Lasna Testnet addresses
     // Note: These need to be obtained from Reactive Network documentation
     // The contracts will be deployed on Reactive Lasna and interact with Base Sepolia
-    address constant REACTIVE_SYSTEM_CONTRACT = address(0); // TODO: Get from Reactive docs
-    address constant REACTIVE_CALLBACK_PROXY = address(0); // TODO: Get from Reactive docs
+    address constant REACTIVE_SYSTEM_CONTRACT = 0x0000000000000000000000000000000000fffFfF; // Gotten from Reactive docs
+    address constant REACTIVE_CALLBACK_PROXY = 0xa6eA49Ed671B8a4dfCDd34E36b7a75Ac79B8A5a6; // Gotten from Reactive docs
 
     // Default parameters
     uint256 constant VOLATILITY_THRESHOLD = 500; // 5%
@@ -88,7 +88,8 @@ contract DeployCorridorHook is Script {
 }
 
 /// @title Deploy to Base Mainnet
-/// @notice Production deployment script
+/// @notice Production deployment script for post-hookathon mainnet launch
+/// @dev Addresses are placeholders - to be updated before mainnet deployment
 contract DeployMainnet is Script {
     // Base Mainnet addresses
     address constant POOL_MANAGER = address(0); // TODO: Update with v4 PoolManager on Base
