@@ -198,7 +198,7 @@ forge script script/Deploy.s.sol:DeployCorridorHook \
 - **Collective Ownership**: Community governs parameters
 - **Cultural Alignment**: Built on esusu/ajo principles
 
-## 🏆 Hackathon Themes
+## 🏆 Hookathon Themes
 
 ### ✅ Impermanent Loss Protection
 
@@ -265,7 +265,7 @@ MIT License - see [LICENSE](LICENSE) for details
 - **Uniswap v4**: https://github.com/Uniswap/v4-core
 - **Reactive Network**: https://docs.reactive.network
 - **Base**: https://base.org
-- **Hackathon**: UHI9 - Uniswap Hook Incubator
+- **Hookathon**: UHI9 - Uniswap Hook Incubator
 
 ## 👥 Team
 

@@ -1,4 +1,4 @@
-# UHI9 Hackathon Submission: Corridor
+# UHI9 Hookathon Submission: Corridor
 
 ## Project Information
 
@@ -30,7 +30,7 @@ Corridor reduces African remittance costs from 8.37% to <1% by enabling communit
 
 ---
 
-## Hackathon Theme Alignment
+## Hookathon Theme Alignment
 
 ### ✅ Theme 1: Impermanent Loss Protection
 
@@ -405,7 +405,7 @@ corridor/
 ├── README.md                      # Project overview
 ├── ARCHITECTURE.md                # Technical details
 ├── DEMO.md                        # Usage scenarios
-└── HACKATHON_SUBMISSION.md       # This file
+└── HOOKATHON_SUBMISSION.md       # This file
 ```
 
 ---
