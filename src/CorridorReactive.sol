@@ -12,6 +12,7 @@ contract CorridorReactive is IReactive {
     error Unauthorized();
     error InvalidThreshold();
     error CallbackFailed();
+    error InvalidAddress();
 
     // ============ Events ============
     event VolatilityDetected(
@@ -22,6 +23,16 @@ contract CorridorReactive is IReactive {
     event PoolPauseTriggered(address indexed pool, uint256 priceChange);
     event PoolResumeTriggered(address indexed pool);
     event PriceUpdated(address indexed pool, uint256 newPrice);
+    event VolatilityThresholdUpdated(
+        uint256 oldThreshold,
+        uint256 newThreshold
+    );
+    event CorridorHookUpdated(address indexed newHook);
+    event PriceOracleUpdated(address indexed newOracle);
+    event OwnershipTransferred(
+        address indexed oldOwner,
+        address indexed newOwner
+    );
 
     // ============ State Variables ============
 
@@ -61,6 +72,13 @@ contract CorridorReactive is IReactive {
         address _priceOracle,
         uint256 _volatilityThreshold
     ) {
+        if (_systemContract == address(0)) revert InvalidAddress();
+        if (_callbackProxy == address(0)) revert InvalidAddress();
+        if (_corridorHook == address(0)) revert InvalidAddress();
+        if (_priceOracle == address(0)) revert InvalidAddress();
+        if (_volatilityThreshold == 0 || _volatilityThreshold > 10000)
+            revert InvalidThreshold();
+
         SYSTEM_CONTRACT = _systemContract;
         CALLBACK_PROXY = _callbackProxy;
         corridorHook = _corridorHook;
@@ -218,26 +236,39 @@ contract CorridorReactive is IReactive {
     // ============ Configuration Functions ============
 
     /// @notice Updates volatility threshold
+    /// @param _newThreshold New threshold in basis points
     function setVolatilityThreshold(uint256 _newThreshold) external onlyOwner {
         if (_newThreshold == 0 || _newThreshold > 10000)
             revert InvalidThreshold();
+        uint256 oldThreshold = volatilityThreshold;
         volatilityThreshold = _newThreshold;
+        emit VolatilityThresholdUpdated(oldThreshold, _newThreshold);
     }
 
     /// @notice Updates corridor hook address
+    /// @param _newHook New hook contract address
     function setCorridorHook(address _newHook) external onlyOwner {
+        if (_newHook == address(0)) revert InvalidAddress();
         corridorHook = _newHook;
+        emit CorridorHookUpdated(_newHook);
     }
 
     /// @notice Updates price oracle address and resubscribes
+    /// @param _newOracle New oracle contract address
     function setPriceOracle(address _newOracle) external onlyOwner {
+        if (_newOracle == address(0)) revert InvalidAddress();
         priceOracle = _newOracle;
         _subscribe();
+        emit PriceOracleUpdated(_newOracle);
     }
 
     /// @notice Transfers ownership
+    /// @param _newOwner New owner address
     function transferOwnership(address _newOwner) external onlyOwner {
+        if (_newOwner == address(0)) revert InvalidAddress();
+        address oldOwner = owner;
         owner = _newOwner;
+        emit OwnershipTransferred(oldOwner, _newOwner);
     }
 
     /// @notice Manual trigger for testing

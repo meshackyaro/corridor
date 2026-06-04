@@ -24,6 +24,7 @@ contract CorridorHook is IHooks {
     error InvalidVolatilityThreshold();
     error InvalidFeeParameters();
     error NotPoolManager();
+    error InvalidAddress();
 
     // ============ Events ============
     event VolatilityThresholdUpdated(
@@ -35,6 +36,12 @@ contract CorridorHook is IHooks {
     event DynamicFeeUpdated(PoolId indexed poolId, uint24 newFee);
     event CommunityLPAdded(address indexed lp, uint256 amount);
     event CommunityLPRemoved(address indexed lp, uint256 amount);
+    event FeeParametersUpdated(uint24 newBaseFee, uint24 newMaxFee);
+    event ReactiveContractUpdated(address indexed newReactive);
+    event GovernanceTransferred(
+        address indexed oldGovernance,
+        address indexed newGovernance
+    );
 
     // ============ State Variables ============
 
@@ -83,6 +90,11 @@ contract CorridorHook is IHooks {
         address _communityGovernance,
         uint256 _volatilityThreshold
     ) {
+        if (address(_poolManager) == address(0)) revert InvalidAddress();
+        if (_communityGovernance == address(0)) revert InvalidAddress();
+        if (_volatilityThreshold == 0 || _volatilityThreshold > 10000)
+            revert InvalidVolatilityThreshold();
+
         poolManager = _poolManager;
         communityGovernance = _communityGovernance;
         volatilityThreshold = _volatilityThreshold;
@@ -228,9 +240,11 @@ contract CorridorHook is IHooks {
 
     /// @notice Sets the Reactive Network contract address
     /// @dev Called by governance to enable automation
+    /// @param _reactiveContract Address of the Reactive Network contract
     function setReactiveContract(address _reactiveContract) external {
         if (msg.sender != communityGovernance) revert Unauthorized();
         reactiveContract = _reactiveContract;
+        emit ReactiveContractUpdated(_reactiveContract);
     }
 
     /// @notice Updates pool fee based on volatility detected by Reactive Network
@@ -298,6 +312,8 @@ contract CorridorHook is IHooks {
     }
 
     /// @notice Updates fee parameters
+    /// @param _baseFee New base fee in basis points
+    /// @param _maxFee New maximum fee in basis points
     function setFeeParameters(uint24 _baseFee, uint24 _maxFee) external {
         if (msg.sender != communityGovernance) revert Unauthorized();
         if (_baseFee > _maxFee || _maxFee > 10000)
@@ -305,11 +321,15 @@ contract CorridorHook is IHooks {
 
         baseFee = _baseFee;
         maxVolatilityFee = _maxFee;
+        emit FeeParametersUpdated(_baseFee, _maxFee);
     }
 
     /// @notice Transfers governance to new address
+    /// @param _newGovernance Address of new governance
     function transferGovernance(address _newGovernance) external {
         if (msg.sender != communityGovernance) revert Unauthorized();
+        address oldGovernance = communityGovernance;
         communityGovernance = _newGovernance;
+        emit GovernanceTransferred(oldGovernance, _newGovernance);
     }
 }
