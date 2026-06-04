@@ -269,7 +269,7 @@ MIT License - see [LICENSE](LICENSE) for details
 
 ## 👥 Team
 
-Built with ❤️ for the African diaspora and local communities
+Built for the African diaspora and local communities
 
 ---
 
