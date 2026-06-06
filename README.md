@@ -112,7 +112,7 @@ if (volatility > threshold) {
 ```solidity
 // Subscribe to price oracle events
 subscribe(
-    chainId: 84532,  // Base Sepolia
+    chainId: 1301,  // Unichain Sepolia
     contract: priceOracle,
     event: "PriceUpdated(bytes32,uint256)"
 )
@@ -158,10 +158,10 @@ forge test --gas-report
 
 ### Target Network
 
-**Base Sepolia Testnet** (Chain ID: 84532)
+**Unichain Sepolia Testnet** (Chain ID: 1301)
 
-- **Why Base?** Officially supported by Reactive Network for cross-chain automation
-- **Uniswap v4**: PoolManager at `0x8C4BcBE6b9eF47855f97E675296FA3F6fafa5F1A`
+- **Why Unichain?** Uniswap's native L2, officially supported by Reactive Network for cross-chain automation
+- **Uniswap v4**: PoolManager at `0x00b036b58a818b1bc34d502d3fe730db729e62ac`
 - **Reactive Network**: Lasna Testnet integration for automated IL protection
 
 ### Prerequisites
@@ -177,10 +177,10 @@ forge install
 
 ### Get Testnet Funds
 
-1. **Base Sepolia ETH**: Use [Base Sepolia Faucet](https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet)
-2. **Reactive lREACT**: Send ETH to `0x2afaFD298b23b62760711756088F75B7409f5967` on Base Sepolia (1 ETH → 100 lREACT)
+1. **Unichain Sepolia ETH**: Bridge from Ethereum Sepolia using [Unichain Bridge](https://bridge.unichain.org/) or [Superbridge](https://superbridge.app/unichain-sepolia)
+2. **Reactive lREACT**: Use [Reactive Network Faucet](https://reactive.network/faucet) or send ETH to the Reactive faucet contract
 
-### Deploy to Base Sepolia
+### Deploy to Unichain Sepolia
 
 ```bash
 # Set environment variables
@@ -199,7 +199,7 @@ forge script script/Deploy.s.sol:DeployCorridorHook \
 
 ### Verify Deployment
 
-Check your contracts on [Base Sepolia Explorer](https://sepolia.basescan.org/)
+Check your contracts on [Unichain Sepolia Explorer](https://sepolia.uniscan.xyz/)
 
 ## 📈 Impact Metrics
 

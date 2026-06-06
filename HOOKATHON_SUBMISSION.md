@@ -5,10 +5,10 @@
 **Project Name**: Corridor  
 **Tagline**: Community-Owned Remittance Infrastructure  
 **Category**: Uniswap v4 Hooks + Reactive Network Integration  
-**Target Chain**: Base Sepolia (Testnet) / Base (Production)  
+**Target Chain**: Unichain Sepolia (Testnet) / Unichain (Production)  
 **Team**: Solo Developer
 
-**Why Base?** Base Sepolia is officially supported by Reactive Network, enabling full cross-chain automation for IL protection. This allows the project to demonstrate both Uniswap v4 hooks AND Reactive Network integration working together in production.
+**Why Unichain?** Unichain is Uniswap's native L2, making it the ideal choice for showcasing Uniswap v4 hooks. Unichain Sepolia is officially supported by Reactive Network, enabling full cross-chain automation for IL protection and demonstrating the future of DeFi on Uniswap's own infrastructure.
 
 ---
 
@@ -306,23 +306,26 @@ Suite result: ok. 73 passed; 0 failed; 0 skipped
 
 ## Deployment & Demo
 
-### Network Selection: Base Sepolia
+### Network Selection: Unichain Sepolia
 
-**Why Base over Unichain for this hookathon?**
+**Why Unichain - The Perfect Choice**
 
-While Unichain is Uniswap's dedicated L2, Base Sepolia was chosen for strategic technical reasons:
+Unichain is Uniswap's native Layer 2, making it the ideal deployment target for this Uniswap v4 hook:
 
-1. **Reactive Network Support**: Base is officially supported by Reactive Network (confirmed by dedicated testnet faucet), while Unichain support is not yet available. The IL protection mechanism requires Reactive's cross-chain automation.
+1. **Native Uniswap Infrastructure**: Built specifically for Uniswap, Unichain offers the best environment for showcasing v4 hooks with optimized gas costs and native liquidity.
 
-2. **Full Integration**: Deploying to Base allows demonstration of BOTH sponsor technologies working together:
-   - ✅ Uniswap v4 hooks (dynamic fees, IL protection)
+2. **Reactive Network Support**: Unichain Sepolia is officially supported by Reactive Network with dedicated callback proxy infrastructure, enabling:
+   - ✅ Real-time volatility monitoring
+   - ✅ Automated IL protection
+   - ✅ Cross-chain event automation
+
+3. **Full Integration**: Deploying to Unichain allows demonstration of BOTH sponsor technologies working together on the optimal chain:
+   - ✅ Uniswap v4 hooks on Uniswap's own chain (dynamic fees, IL protection)
    - ✅ Reactive Network automation (volatility monitoring, automated callbacks)
 
-3. **Production-Ready**: Base Sepolia has proven infrastructure, clear documentation, and active testnet faucets. This ensures a working demonstration.
+4. **Aligned Vision**: Deploying on Unichain demonstrates commitment to the Uniswap ecosystem and showcases how hooks can enhance DeFi on Uniswap's own chain.
 
-4. **Judge Appeal**: A fully functional hook with meaningful Reactive integration demonstrates technical excellence better than a hook on Unichain without automation.
-
-5. **Multi-Chain Vision**: Base is part of the Superchain ecosystem and widely used for DeFi. Success on Base demonstrates real-world viability.
+5. **Future-Proof**: As Unichain grows to become the home of DeFi, this infrastructure is positioned for production deployment on the most relevant chain.
 
 **Note**: When Reactive Network adds Unichain support, Corridor can be deployed there without code changes - it's purely configuration.
 

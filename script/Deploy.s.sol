@@ -11,14 +11,15 @@ import {IPoolManager} from "v4-core/interfaces/IPoolManager.sol";
 /// @title Deploy Corridor Hook
 /// @notice Deployment script for Corridor remittance infrastructure
 contract DeployCorridorHook is Script {
-    // Base Sepolia addresses
-    address constant POOL_MANAGER = 0x8C4BcBE6b9eF47855f97E675296FA3F6fafa5F1A; // v4 PoolManager on Base Sepolia
+    // Unichain Sepolia addresses
+    address constant POOL_MANAGER = 0x00b036b58a818b1bc34d502d3fe730db729e62ac; // v4 PoolManager on Unichain Sepolia
 
     // Reactive Network Lasna Testnet addresses
-    // Note: These need to be obtained from Reactive Network documentation
-    // The contracts will be deployed on Reactive Lasna and interact with Base Sepolia
-    address constant REACTIVE_SYSTEM_CONTRACT = 0x0000000000000000000000000000000000fffFfF; // Gotten from Reactive docs
-    address constant REACTIVE_CALLBACK_PROXY = 0xa6eA49Ed671B8a4dfCDd34E36b7a75Ac79B8A5a6; // Gotten from Reactive docs
+    // The Reactive contract will be deployed on Reactive Lasna and interact with Unichain Sepolia
+    address constant REACTIVE_SYSTEM_CONTRACT =
+        0x0000000000000000000000000000000000fffFfF; // System Contract (same for mainnet/testnet)
+    address constant REACTIVE_CALLBACK_PROXY =
+        0x9299472A6399Fd1027ebF067571Eb3e3D7837FC4; // Callback Proxy for Unichain Sepolia
 
     // Default parameters
     uint256 constant VOLATILITY_THRESHOLD = 500; // 5%
@@ -87,17 +88,18 @@ contract DeployCorridorHook is Script {
     }
 }
 
-/// @title Deploy to Base Mainnet
+/// @title Deploy to Unichain Mainnet
 /// @notice Production deployment script for post-hookathon mainnet launch
 /// @dev Addresses are placeholders - to be updated before mainnet deployment
 contract DeployMainnet is Script {
-    // Base Mainnet addresses
-    address constant POOL_MANAGER = address(0); // TODO: Update with v4 PoolManager on Base
+    // Unichain Mainnet addresses
+    address constant POOL_MANAGER = 0x1f98400000000000000000000000000000000004; // v4 PoolManager on Unichain Mainnet
     address constant CHAINLINK_NGN_USD = address(0); // TODO: Update with Chainlink feed
 
     // Reactive Network mainnet addresses
-    address constant REACTIVE_SYSTEM_CONTRACT = address(0); // TODO: Update
-    address constant REACTIVE_CALLBACK_PROXY = address(0); // TODO: Update
+    address constant REACTIVE_SYSTEM_CONTRACT =
+        0x0000000000000000000000000000000000fffFfF; // System Contract
+    address constant REACTIVE_CALLBACK_PROXY = address(0); // TODO: Update with Unichain Mainnet callback proxy
 
     uint256 constant VOLATILITY_THRESHOLD = 500; // 5%
 
