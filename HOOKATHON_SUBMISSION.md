@@ -111,12 +111,12 @@ African currency volatility is **extreme and unpredictable**. Traditional approa
 ### Integration Architecture
 
 ```
-Price Oracle (Base) → Reactive Network → CorridorHook (Base)
-     │                      │                    │
-     │ PriceUpdated        │ react()            │ pausePool()
-     │ event               │ triggered          │ executed
-     └─────────────────────┴────────────────────┘
-          Automated IL Protection Flow
+Price Oracle (Unichain) → Reactive Network → CorridorHook (Unichain)
+     │                          │                      │
+     │ PriceUpdated            │ react()              │ pausePool()
+     │ event                   │ triggered            │ executed
+     └─────────────────────────┴──────────────────────┘
+              Automated IL Protection Flow
 ```
 
 ### Reactive Contract Features
@@ -124,7 +124,7 @@ Price Oracle (Base) → Reactive Network → CorridorHook (Base)
 1. **Event Subscription**: Monitors NGN/USD price oracle
 2. **Volatility Calculation**: Real-time price change analysis
 3. **Conditional Callbacks**: Triggers only when thresholds exceeded
-4. **Cross-Chain Execution**: Sends transactions to Base
+4. **Cross-Chain Execution**: Sends transactions to Unichain
 
 **Code Reference**: See `src/CorridorReactive.sol` for complete implementation
 
@@ -345,7 +345,7 @@ Unichain is Uniswap's native Layer 2, making it the ideal deployment target for 
 - Add GHS/USD and KES/USD corridors
 - Integrate Aave/Compound for yield
 - Implement transaction batching
-- Deploy to Base mainnet
+- Deploy to Unichain mainnet
 
 ### Phase 3: Community (6 months)
 

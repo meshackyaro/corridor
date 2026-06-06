@@ -35,7 +35,7 @@ Corridor builds on African communal finance traditions (esusu, ajo, charam) to c
 
 - **Volatility Monitoring**: Real-time price oracle tracking
 - **Automated Callbacks**: Triggers hook functions based on market conditions
-- **Cross-Chain Coordination**: Monitors Base mainnet from Reactive Network
+- **Cross-Chain Coordination**: Monitors Unichain from Reactive Network
 - **Emergency Response**: Instant pool pausing during currency crises
 
 ### Key Features
@@ -257,7 +257,7 @@ Check your contracts on [Unichain Sepolia Explorer](https://sepolia.uniscan.xyz/
 - [ ] Add GHS/USD and KES/USD corridors
 - [ ] Integrate Aave/Compound for yield
 - [ ] Implement transaction batching
-- [ ] Deploy to Base mainnet
+- [ ] Deploy to Unichain mainnet
 
 ### Phase 3: Community
 
@@ -285,7 +285,7 @@ MIT License - see [LICENSE](LICENSE) for details
 
 - **Uniswap v4**: https://github.com/Uniswap/v4-core
 - **Reactive Network**: https://docs.reactive.network
-- **Base**: https://base.org
+- **Unichain**: https://unichain.org
 - **Hookathon**: UHI9 - Uniswap Hook Incubator
 
 ## 👥 Team
