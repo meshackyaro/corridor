@@ -201,6 +201,20 @@ forge script script/Deploy.s.sol:DeployCorridorHook \
 
 Check your contracts on [Unichain Sepolia Explorer](https://sepolia.uniscan.xyz/)
 
+### Start Real-Time Price Updates (For Demo)
+
+The `price-updater` service fetches real NGN/USD rates and updates your oracle:
+
+```bash
+cd price-updater
+npm install
+cp .env.example .env
+# Edit .env with your deployed contract addresses
+npm run dev
+```
+
+See [price-updater/README.md](price-updater/README.md) for full documentation.
+
 ## 📈 Impact Metrics
 
 ### Target Outcomes
