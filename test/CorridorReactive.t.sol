@@ -77,7 +77,7 @@ contract CorridorReactiveTest is Test {
         assertEq(reactive.priceOracle(), priceOracle);
         assertEq(reactive.volatilityThreshold(), VOLATILITY_THRESHOLD);
         assertEq(reactive.owner(), owner);
-        assertEq(reactive.DESTINATION_CHAIN_ID(), 84532); // Base Sepolia
+        assertEq(reactive.DESTINATION_CHAIN_ID(), 1301); // Unichain Sepolia
     }
 
     function test_Constructor_RevertZeroSystemContract() public {
@@ -211,7 +211,7 @@ contract CorridorReactiveTest is Test {
             callbackProxy,
             abi.encodeWithSignature(
                 "sendCallback(uint256,address,bytes)",
-                84532,
+                1301,
                 corridorHook,
                 abi.encodeWithSignature(
                     "pausePool(bytes32,uint256)",
@@ -265,7 +265,7 @@ contract CorridorReactiveTest is Test {
             callbackProxy,
             abi.encodeWithSignature(
                 "sendCallback(uint256,address,bytes)",
-                84532,
+                1301,
                 corridorHook,
                 abi.encodeWithSignature(
                     "updatePoolFee(bytes32,uint256)",
@@ -299,7 +299,7 @@ contract CorridorReactiveTest is Test {
             callbackProxy,
             abi.encodeWithSignature(
                 "sendCallback(uint256,address,bytes)",
-                84532,
+                1301,
                 corridorHook,
                 abi.encodeWithSignature(
                     "pausePool(bytes32,uint256)",
@@ -481,7 +481,7 @@ contract CorridorReactiveTest is Test {
         emit PriceUpdated(_poolIdToAddress(poolId), 1000);
 
         vm.prank(systemContract);
-        reactive.react(84532, priceOracle, 0, 0, 0, 0, data, 1, 0);
+        reactive.react(1301, priceOracle, 0, 0, 0, 0, data, 1, 0);
 
         assertEq(reactive.lastPrices(poolId), 1000);
     }
@@ -492,7 +492,7 @@ contract CorridorReactiveTest is Test {
 
         vm.prank(makeAddr("attacker"));
         vm.expectRevert(CorridorReactive.Unauthorized.selector);
-        reactive.react(84532, priceOracle, 0, 0, 0, 0, data, 1, 0);
+        reactive.react(1301, priceOracle, 0, 0, 0, 0, data, 1, 0);
     }
 
     // ============ Helper Functions ============

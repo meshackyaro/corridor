@@ -12,7 +12,7 @@ import {IPoolManager} from "v4-core/interfaces/IPoolManager.sol";
 /// @notice Deployment script for Corridor remittance infrastructure
 contract DeployCorridorHook is Script {
     // Unichain Sepolia addresses
-    address constant POOL_MANAGER = 0x00b036b58a818b1bc34d502d3fe730db729e62ac; // v4 PoolManager on Unichain Sepolia
+    address constant POOL_MANAGER = 0x00B036B58a818B1BC34d502D3fE730Db729e62AC; // v4 PoolManager on Unichain Sepolia
 
     // Reactive Network Lasna Testnet addresses
     // The Reactive contract will be deployed on Reactive Lasna and interact with Unichain Sepolia
@@ -93,7 +93,7 @@ contract DeployCorridorHook is Script {
 /// @dev Addresses are placeholders - to be updated before mainnet deployment
 contract DeployMainnet is Script {
     // Unichain Mainnet addresses
-    address constant POOL_MANAGER = 0x1f98400000000000000000000000000000000004; // v4 PoolManager on Unichain Mainnet
+    address constant POOL_MANAGER = 0x1F98400000000000000000000000000000000004; // v4 PoolManager on Unichain Mainnet
     address constant CHAINLINK_NGN_USD = address(0); // TODO: Update with Chainlink feed
 
     // Reactive Network mainnet addresses

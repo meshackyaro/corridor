@@ -182,19 +182,55 @@ forge install
 
 ### Deploy to Unichain Sepolia
 
+#### **Option 1: Using Foundry Keystore (Recommended - Most Secure)**
+
+```bash
+# 1. Setup encrypted keystore (one-time)
+cast wallet import corridor-deployer --interactive
+# Enter your private key when prompted
+# Choose a strong password
+
+# 2. Set environment variables
+export UNICHAIN_SEPOLIA_RPC=https://sepolia.unichain.org
+export GOVERNANCE_ADDRESS=<your-governance-address>  # Optional, defaults to deployer
+
+# 3. Deploy (will prompt for keystore password)
+forge script script/Deploy.s.sol:DeployCorridorHook \
+    --rpc-url $UNICHAIN_SEPOLIA_RPC \
+    --account corridor-deployer \
+    --broadcast
+
+# 4. Optional: Verify contract (if Uniscan API is available)
+forge verify-contract <deployed-address> \
+    src/CorridorHook.sol:CorridorHook \
+    --chain-id 1301 \
+    --watch
+```
+
+#### **Option 2: Using Private Key Directly**
+
 ```bash
 # Set environment variables
 export PRIVATE_KEY=<your-private-key>
-export BASE_SEPOLIA_RPC=https://sepolia.base.org
-export GOVERNANCE_ADDRESS=<governance-address>
+export UNICHAIN_SEPOLIA_RPC=https://sepolia.unichain.org
+export GOVERNANCE_ADDRESS=<governance-address>  # Optional
 
 # Deploy
 forge script script/Deploy.s.sol:DeployCorridorHook \
-    --rpc-url $BASE_SEPOLIA_RPC \
+    --rpc-url $UNICHAIN_SEPOLIA_RPC \
     --private-key $PRIVATE_KEY \
-    --broadcast \
-    --verify \
-    --etherscan-api-key $BASESCAN_API_KEY
+    --broadcast
+```
+
+#### **Option 3: Using Hardware Wallet (Most Secure for Mainnet)**
+
+```bash
+# Deploy with Ledger/Trezor
+forge script script/Deploy.s.sol:DeployCorridorHook \
+    --rpc-url $UNICHAIN_SEPOLIA_RPC \
+    --ledger \
+    --sender <your-ledger-address> \
+    --broadcast
 ```
 
 ### Verify Deployment
