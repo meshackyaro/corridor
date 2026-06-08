@@ -161,7 +161,7 @@ forge test --gas-report
 **Unichain Sepolia Testnet** (Chain ID: 1301)
 
 - **Why Unichain?** Uniswap's native L2, officially supported by Reactive Network for cross-chain automation
-- **Uniswap v4**: PoolManager at `0x00b036b58a818b1bc34d502d3fe730db729e62ac`
+- **Uniswap v4**: PoolManager at `0x00B036B58a818B1BC34d502D3fE730Db729e62AC`
 - **Reactive Network**: Lasna Testnet integration for automated IL protection
 
 ### Prerequisites

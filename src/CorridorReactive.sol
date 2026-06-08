@@ -65,7 +65,7 @@ contract CorridorReactive is IReactive {
     /// @notice Owner address for configuration
     address public owner;
 
-    /// @notice Destination chain ID (Unichain Sepolia = 1301, Unichain Mainnet = 1301)
+    /// @notice Destination chain ID (Unichain Sepolia = 1301, Unichain Mainnet = 130)
     uint256 public constant DESTINATION_CHAIN_ID = 1301;
 
     // ============ Constructor ============
