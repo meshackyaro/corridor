@@ -180,62 +180,62 @@ forge install
 1. **Unichain Sepolia ETH**: Bridge from Ethereum Sepolia using [Unichain Bridge](https://bridge.unichain.org/) or [Superbridge](https://superbridge.app/unichain-sepolia)
 2. **Reactive lREACT**: Use [Reactive Network Faucet](https://reactive.network/faucet) or send ETH to the Reactive faucet contract
 
-### Deploy to Unichain Sepolia
+### Deploy to Unichain Sepolia & Reactive Network
 
-#### **Option 1: Using Foundry Keystore (Recommended - Most Secure)**
+Corridor requires cross-chain deployment across two networks:
+
+1. **Unichain Sepolia** - Hook and Oracle (origin/destination)
+2. **Reactive Network** - Monitoring contract (automation)
+
+See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for complete step-by-step instructions.
+
+#### **Quick Start (3 Steps)**
+
+**Step 1: Deploy to Unichain Sepolia**
 
 ```bash
-# 1. Setup encrypted keystore (one-time)
-cast wallet import corridor-deployer --interactive
-# Enter your private key when prompted
-# Choose a strong password
-
-# 2. Set environment variables
 export UNICHAIN_SEPOLIA_RPC=https://sepolia.unichain.org
-export GOVERNANCE_ADDRESS=<your-governance-address>  # Optional, defaults to deployer
 
-# 3. Deploy (will prompt for keystore password)
-forge script script/Deploy.s.sol:DeployCorridorHook \
+forge script script/DeployToUnichain.s.sol:DeployToUnichain \
     --rpc-url $UNICHAIN_SEPOLIA_RPC \
-    --account corridor-deployer \
+    --account your-account \
     --broadcast
 
-# 4. Optional: Verify contract (if Uniscan API is available)
-forge verify-contract <deployed-address> \
-    src/CorridorHook.sol:CorridorHook \
-    --chain-id 1301 \
-    --watch
+# Save the Hook and Oracle addresses!
 ```
 
-#### **Option 2: Using Private Key Directly**
+**Step 2: Deploy to Reactive Network**
 
 ```bash
-# Set environment variables
-export PRIVATE_KEY=<your-private-key>
-export UNICHAIN_SEPOLIA_RPC=https://sepolia.unichain.org
-export GOVERNANCE_ADDRESS=<governance-address>  # Optional
+# Add addresses from Step 1 to .env
+export CORRIDOR_HOOK=0xYourHookAddress
+export PRICE_ORACLE=0xYourOracleAddress
+export REACTIVE_RPC=https://lasna-omni-rpc.rnk.dev/
 
-# Deploy
-forge script script/Deploy.s.sol:DeployCorridorHook \
-    --rpc-url $UNICHAIN_SEPOLIA_RPC \
-    --private-key $PRIVATE_KEY \
+forge script script/DeployToReactive.s.sol:DeployToReactive \
+    --rpc-url $REACTIVE_RPC \
+    --account your-account \
     --broadcast
+
+# Save the Reactive contract address!
 ```
 
-#### **Option 3: Using Hardware Wallet (Most Secure for Mainnet)**
+**Step 3: Connect the Contracts**
 
 ```bash
-# Deploy with Ledger/Trezor
-forge script script/Deploy.s.sol:DeployCorridorHook \
+# Add Reactive address to .env
+export REACTIVE_CONTRACT=0xYourReactiveAddress
+
+forge script script/ConnectContracts.s.sol:ConnectContracts \
     --rpc-url $UNICHAIN_SEPOLIA_RPC \
-    --ledger \
-    --sender <your-ledger-address> \
+    --account your-account \
     --broadcast
 ```
 
 ### Verify Deployment
 
-Check your contracts on [Unichain Sepolia Explorer](https://sepolia.uniscan.xyz/)
+- **Unichain Contracts**: [Unichain Sepolia Explorer](https://sepolia.uniscan.xyz/)
+- **Reactive Contract**: [Reactive Lasna Explorer](https://lasna.reactscan.net)
 
 ### Start Real-Time Price Updates (For Demo)
 
