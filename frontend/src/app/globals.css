@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 244 233 215;
+    --foreground: 27 38 59;
+  }
+
+  body {
+    background: linear-gradient(135deg, #f4e9d7 0%, #e8d5b8 100%);
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .pattern-dots {
+    background-image: radial-gradient(circle, rgba(45, 106, 79, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #2D6A4F 0%, #D4AF37 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}

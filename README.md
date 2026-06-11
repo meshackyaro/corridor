@@ -331,6 +331,31 @@ We welcome contributions from the community! Please see [CONTRIBUTING.md](CONTRI
 
 MIT License - see [LICENSE](LICENSE) for details
 
+## 🎨 Frontend
+
+A beautiful, culturally authentic frontend is available in the `frontend/` directory:
+
+- **African-inspired design** with warm colors and community-first messaging
+- **Interactive remittance calculator** showing real savings
+- **Live pool monitoring** dashboard with real-time data
+- **Full Web3 integration** with RainbowKit and Wagmi
+- **Production-ready** with comprehensive deployment guides
+
+**Quick Start:**
+
+```bash
+cd frontend
+./setup.sh
+npm run dev
+```
+
+**Documentation:**
+
+- [Frontend README](./frontend/README.md) - Getting started
+- [Features Guide](./frontend/FEATURES.md) - What's included
+- [Deployment Guide](./frontend/DEPLOYMENT.md) - Going to production
+- [Integration Guide](./FRONTEND_INTEGRATION.md) - Contract integration
+
 ## 🔗 Links
 
 - **Uniswap v4**: https://github.com/Uniswap/v4-core
