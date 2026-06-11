@@ -16,7 +16,7 @@ contract CorridorHookTest is Test {
     CorridorHook public hook;
     IPoolManager public poolManager;
     address public governance;
-    address public reactiveContract;
+    address public reactiveCallbackProxy;
     address public lpProvider;
 
     uint256 constant VOLATILITY_THRESHOLD = 500; // 5%
@@ -41,7 +41,7 @@ contract CorridorHookTest is Test {
     function setUp() public {
         // Setup addresses
         governance = makeAddr("governance");
-        reactiveContract = makeAddr("reactive");
+        reactiveCallbackProxy = makeAddr("reactive");
         lpProvider = makeAddr("lpProvider");
         poolManager = IPoolManager(makeAddr("poolManager"));
 
@@ -60,15 +60,15 @@ contract CorridorHookTest is Test {
 
     function test_SetReactiveContract() public {
         vm.prank(governance);
-        hook.setReactiveContract(reactiveContract);
+        hook.setReactiveContract(reactiveCallbackProxy);
 
-        assertEq(hook.reactiveContract(), reactiveContract);
+        assertEq(hook.reactiveCallbackProxy(), reactiveCallbackProxy);
     }
 
     function test_SetReactiveContract_RevertUnauthorized() public {
         vm.prank(makeAddr("attacker"));
         vm.expectRevert(CorridorHook.Unauthorized.selector);
-        hook.setReactiveContract(reactiveContract);
+        hook.setReactiveContract(reactiveCallbackProxy);
     }
 
     function test_SetVolatilityThreshold() public {
@@ -116,7 +116,7 @@ contract CorridorHookTest is Test {
     function test_UpdatePoolFee_LowVolatility() public {
         // Setup
         vm.prank(governance);
-        hook.setReactiveContract(reactiveContract);
+        hook.setReactiveContract(reactiveCallbackProxy);
 
         PoolKey memory key = _createPoolKey();
         PoolId poolId = key.toId();
@@ -129,10 +129,10 @@ contract CorridorHookTest is Test {
         uint256 volatility = 250; // 2.5%
         // Expected fee: baseFee (30) + (250 * (100-30) / 500) = 30 + 35 = 65
 
-        vm.prank(reactiveContract);
+        vm.prank(reactiveCallbackProxy);
         vm.expectEmit(true, true, true, true);
         emit DynamicFeeUpdated(poolId, 65);
-        hook.updatePoolFee(poolId, volatility);
+        hook.updatePoolFee(address(0), poolId, volatility);
 
         assertEq(hook.poolDynamicFee(poolId), 65);
     }
@@ -140,7 +140,7 @@ contract CorridorHookTest is Test {
     function test_UpdatePoolFee_HighVolatility() public {
         // Setup
         vm.prank(governance);
-        hook.setReactiveContract(reactiveContract);
+        hook.setReactiveContract(reactiveCallbackProxy);
 
         PoolKey memory key = _createPoolKey();
         PoolId poolId = key.toId();
@@ -152,10 +152,10 @@ contract CorridorHookTest is Test {
         // Update fee with high volatility (7%)
         uint256 volatility = 700; // 7%
 
-        vm.prank(reactiveContract);
+        vm.prank(reactiveCallbackProxy);
         vm.expectEmit(true, true, true, true);
         emit DynamicFeeUpdated(poolId, 100); // maxVolatilityFee
-        hook.updatePoolFee(poolId, volatility);
+        hook.updatePoolFee(address(0), poolId, volatility);
 
         assertEq(hook.poolDynamicFee(poolId), 100);
     }
@@ -163,16 +163,16 @@ contract CorridorHookTest is Test {
     function test_PausePool() public {
         // Setup
         vm.prank(governance);
-        hook.setReactiveContract(reactiveContract);
+        hook.setReactiveContract(reactiveCallbackProxy);
 
         PoolKey memory key = _createPoolKey();
         PoolId poolId = key.toId();
 
         // Pause pool
-        vm.prank(reactiveContract);
+        vm.prank(reactiveCallbackProxy);
         vm.expectEmit(true, true, true, true);
         emit PoolPausedByVolatility(poolId, 1000);
-        hook.pausePool(poolId, 1000);
+        hook.pausePool(address(0), poolId, 1000);
 
         assertTrue(hook.poolPaused(poolId));
     }
@@ -180,19 +180,19 @@ contract CorridorHookTest is Test {
     function test_ResumePool() public {
         // Setup
         vm.prank(governance);
-        hook.setReactiveContract(reactiveContract);
+        hook.setReactiveContract(reactiveCallbackProxy);
 
         PoolKey memory key = _createPoolKey();
         PoolId poolId = key.toId();
 
         // Pause then resume
-        vm.prank(reactiveContract);
-        hook.pausePool(poolId, 1000);
+        vm.prank(reactiveCallbackProxy);
+        hook.pausePool(address(0), poolId, 1000);
 
-        vm.prank(reactiveContract);
+        vm.prank(reactiveCallbackProxy);
         vm.expectEmit(true, true, true, true);
         emit PoolResumed(poolId);
-        hook.resumePool(poolId);
+        hook.resumePool(address(0), poolId);
 
         assertFalse(hook.poolPaused(poolId));
     }
@@ -200,14 +200,14 @@ contract CorridorHookTest is Test {
     function test_BeforeSwap_RevertWhenPaused() public {
         // Setup
         vm.prank(governance);
-        hook.setReactiveContract(reactiveContract);
+        hook.setReactiveContract(reactiveCallbackProxy);
 
         PoolKey memory key = _createPoolKey();
         PoolId poolId = key.toId();
 
         // Pause pool
-        vm.prank(reactiveContract);
-        hook.pausePool(poolId, 1000);
+        vm.prank(reactiveCallbackProxy);
+        hook.pausePool(address(0), poolId, 1000);
 
         // Try to swap
         IPoolManager.SwapParams memory params;
@@ -396,7 +396,7 @@ contract CorridorHookTest is Test {
         vm.prank(governance);
         vm.expectEmit(true, true, true, true);
         emit DynamicFeeUpdated(poolId, 65);
-        hook.updatePoolFee(poolId, volatility);
+        hook.updatePoolFee(address(0), poolId, volatility);
 
         assertEq(hook.poolDynamicFee(poolId), 65);
     }
@@ -407,7 +407,7 @@ contract CorridorHookTest is Test {
 
         vm.prank(makeAddr("attacker"));
         vm.expectRevert(CorridorHook.Unauthorized.selector);
-        hook.updatePoolFee(poolId, 100);
+        hook.updatePoolFee(address(0), poolId, 100);
     }
 
     function test_PausePool_ByGovernance() public {
@@ -417,7 +417,7 @@ contract CorridorHookTest is Test {
         vm.prank(governance);
         vm.expectEmit(true, true, true, true);
         emit PoolPausedByVolatility(poolId, 500);
-        hook.pausePool(poolId, 500);
+        hook.pausePool(address(0), poolId, 500);
 
         assertTrue(hook.poolPaused(poolId));
     }
@@ -428,7 +428,7 @@ contract CorridorHookTest is Test {
 
         vm.prank(makeAddr("attacker"));
         vm.expectRevert(CorridorHook.Unauthorized.selector);
-        hook.pausePool(poolId, 100);
+        hook.pausePool(address(0), poolId, 100);
     }
 
     function test_ResumePool_ByGovernance() public {
@@ -437,13 +437,13 @@ contract CorridorHookTest is Test {
 
         // Pause first
         vm.prank(governance);
-        hook.pausePool(poolId, 500);
+        hook.pausePool(address(0), poolId, 500);
 
         // Resume by governance
         vm.prank(governance);
         vm.expectEmit(true, true, true, true);
         emit PoolResumed(poolId);
-        hook.resumePool(poolId);
+        hook.resumePool(address(0), poolId);
 
         assertFalse(hook.poolPaused(poolId));
     }
@@ -454,7 +454,7 @@ contract CorridorHookTest is Test {
 
         vm.prank(makeAddr("attacker"));
         vm.expectRevert(CorridorHook.Unauthorized.selector);
-        hook.resumePool(poolId);
+        hook.resumePool(address(0), poolId);
     }
 
     function test_BeforeRemoveLiquidity_WithoutShares() public {
@@ -472,7 +472,7 @@ contract CorridorHookTest is Test {
 
     function test_UpdatePoolFee_AtExactThreshold() public {
         vm.prank(governance);
-        hook.setReactiveContract(reactiveContract);
+        hook.setReactiveContract(reactiveCallbackProxy);
 
         PoolKey memory key = _createPoolKey();
         PoolId poolId = key.toId();
@@ -483,8 +483,8 @@ contract CorridorHookTest is Test {
         // Volatility exactly at threshold (500 = 5%)
         uint256 volatility = 500;
 
-        vm.prank(reactiveContract);
-        hook.updatePoolFee(poolId, volatility);
+        vm.prank(reactiveCallbackProxy);
+        hook.updatePoolFee(address(0), poolId, volatility);
 
         // Should still use baseFee + calculation, not maxFee
         // Expected: baseFee (30) + (500 * (100-30) / 500) = 30 + 70 = 100
@@ -504,8 +504,8 @@ contract CorridorHookTest is Test {
     function test_SetReactiveContract_EmitsEvent() public {
         vm.prank(governance);
         vm.expectEmit(true, true, true, true);
-        emit ReactiveContractUpdated(reactiveContract);
-        hook.setReactiveContract(reactiveContract);
+        emit ReactiveContractUpdated(reactiveCallbackProxy);
+        hook.setReactiveContract(reactiveCallbackProxy);
     }
 
     function test_TransferGovernance_EmitsEvent() public {

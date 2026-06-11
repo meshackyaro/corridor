@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.26;
 
 import {IHooks} from "v4-core/interfaces/IHooks.sol";
 import {IPoolManager} from "v4-core/interfaces/IPoolManager.sol";
@@ -51,8 +51,10 @@ contract CorridorHook is IHooks {
     /// @notice Community governance address
     address public communityGovernance;
 
-    /// @notice Reactive Network contract address for automation
-    address public reactiveContract;
+    /// @notice Reactive Network Callback Proxy address (on Unichain)
+    /// @dev This is the address that will call pausePool/resumePool/updatePoolFee
+    /// @dev NOT the RSC address on Lasna - it's the Callback Proxy address on Unichain
+    address public reactiveCallbackProxy;
 
     /// @notice Volatility threshold (basis points) - triggers IL protection
     /// @dev 500 = 5% price movement triggers protection
@@ -240,18 +242,22 @@ contract CorridorHook is IHooks {
 
     /// @notice Sets the Reactive Network contract address
     /// @dev Called by governance to enable automation
-    /// @param _reactiveContract Address of the Reactive Network contract
-    function setReactiveContract(address _reactiveContract) external {
+    /// @param _reactiveCallbackProxy Address of the Reactive Network contract
+    function setReactiveContract(address _reactiveCallbackProxy) external {
         if (msg.sender != communityGovernance) revert Unauthorized();
-        reactiveContract = _reactiveContract;
-        emit ReactiveContractUpdated(_reactiveContract);
+        reactiveCallbackProxy = _reactiveCallbackProxy;
+        emit ReactiveContractUpdated(_reactiveCallbackProxy);
     }
 
     /// @notice Updates pool fee based on volatility detected by Reactive Network
-    /// @dev Called by Reactive Network contract
-    function updatePoolFee(PoolId poolId, uint256 volatilityBps) external {
+    /// @dev Called by Reactive Callback Proxy with rvm_id injected as first argument
+    function updatePoolFee(
+        address /* rvm_id */,
+        PoolId poolId,
+        uint256 volatilityBps
+    ) external {
         if (
-            msg.sender != reactiveContract && msg.sender != communityGovernance
+            msg.sender != reactiveCallbackProxy && msg.sender != communityGovernance
         ) {
             revert Unauthorized();
         }
@@ -272,10 +278,14 @@ contract CorridorHook is IHooks {
     }
 
     /// @notice Pauses pool during extreme volatility
-    /// @dev Called by Reactive Network contract when volatility exceeds threshold
-    function pausePool(PoolId poolId, uint256 priceChange) external {
+    /// @dev Called by Reactive Callback Proxy with rvm_id injected as first argument
+    function pausePool(
+        address /* rvm_id */,
+        PoolId poolId,
+        uint256 priceChange
+    ) external {
         if (
-            msg.sender != reactiveContract && msg.sender != communityGovernance
+            msg.sender != reactiveCallbackProxy && msg.sender != communityGovernance
         ) {
             revert Unauthorized();
         }
@@ -285,10 +295,10 @@ contract CorridorHook is IHooks {
     }
 
     /// @notice Resumes pool after volatility stabilizes
-    /// @dev Called by Reactive Network contract or governance
-    function resumePool(PoolId poolId) external {
+    /// @dev Called by Reactive Callback Proxy with rvm_id injected as first argument
+    function resumePool(address /* rvm_id */, PoolId poolId) external {
         if (
-            msg.sender != reactiveContract && msg.sender != communityGovernance
+            msg.sender != reactiveCallbackProxy && msg.sender != communityGovernance
         ) {
             revert Unauthorized();
         }
