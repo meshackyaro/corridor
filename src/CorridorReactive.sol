@@ -90,10 +90,8 @@ contract CorridorReactive is AbstractReactive {
         volatilityThreshold = _volatilityThreshold;
         owner = msg.sender;
 
-        // Subscribe to price oracle events (only on Reactive Network, not in ReactVM)
-        if (!vm) {
-            _subscribe();
-        }
+        // Note: Subscription moved to external function due to Lasna testnet requirements
+        // Call subscribe() after deployment
     }
 
     // ============ Modifiers ============
